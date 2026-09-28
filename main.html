@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Peminjaman Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Latar belakang abu-abu untuk desktop */
+        }
+        
+        /* Menyembunyikan scrollbar untuk tampilan yang lebih bersih */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        /* Animasi untuk bottom sheet modal */
+        .bottom-sheet-enter {
+            transform: translateY(100%);
+        }
+        .bottom-sheet-active {
+            transform: translateY(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bottom-sheet-exit {
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Styling input agar seragam */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <!-- Container Utama: Dibatasi max 480px agar seperti HP -->
+    <div id="mobile-container" class="relative w-full max-w-[480px] h-[100dvh] sm:h-[850px] sm:max-h-[95vh] bg-white sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        
+        <!-- Header (Gambar Produk) -->
+        <div class="relative w-full h-64 bg-white flex items-center justify-center p-4 border-b border-gray-100">
+            <img src="71kTwM8vbWL._AC_SL1500_.jpg" alt="Monitor LG" class="max-w-full max-h-full object-contain drop-shadow-md">
+        </div>
+
+        <!-- Konten Detail Produk -->
+        <div class="flex-1 overflow-y-auto pb-24 p-5">
+            <!-- Badges -->
+            <div class="flex flex-wrap gap-2 mb-3">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    Sedang tidak dipinjam
+                </span>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                    Kondisi: Baik
+                </span>
+            </div>
+
+            <!-- Judul -->
+            <h1 class="text-xl font-bold text-gray-900 leading-tight mb-4">
+                LG 24U411A-B 24-inch Full HD (1920 x 1080) IPS Computer Monitor, 120Hz
+            </h1>
+
+            <!-- Spesifikasi -->
+            <div class="space-y-3">
+                <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Spesifikasi Utama</h2>
+                <p class="text-sm text-gray-600 leading-relaxed text-justify">
+                    Vivid Color with Full HD Resolution - The LG 24" IPS monitor with Full HD (1920 x 1080) resolution delivers sharp, vibrant visuals from virtually any angle. Whether you're tackling tasks, browsing the web, or managing your inbox, this monitor helps you stay clear, focused, and productive.
+                </p>
+            </div>
+        </div>
+
+        <!-- Fixed Action Bar (Tombol Meminjam) -->
+        <div class="absolute bottom-0 left-0 w-full bg-white border-t border-gray-100 p-4 pb-6 sm:pb-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <button id="btn-open-modal" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98]">
+                Ingin Meminjam
+            </button>
+        </div>
+
+        <!-- Overlay/Modal Form Peminjaman -->
+        <div id="modal-overlay" class="absolute inset-0 bg-black/50 z-20 hidden backdrop-blur-sm transition-opacity opacity-0"></div>
+        
+        <div id="borrow-modal" class="absolute bottom-0 left-0 w-full bg-white rounded-t-3xl z-30 bottom-sheet-enter flex flex-col" style="max-height: 90%;">
+            
+            <!-- Handle Drag (Visual) & Header -->
+            <div class="pt-3 pb-2 px-5 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-3xl sticky top-0 z-10">
+                <div>
+                    <div class="w-12 h-1.5 bg-gray-300 rounded-full mb-3 mx-auto absolute left-1/2 -translate-x-1/2 top-3"></div>
+                    <h2 class="text-lg font-bold text-gray-900 mt-2">Form Peminjaman</h2>
+                </div>
+                <button id="btn-close-modal" class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 mt-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Form Content -->
+            <div class="p-5 overflow-y-auto flex-1">
+                <form id="borrow-form" class="space-y-4">
+                    
+                    <!-- Data Diri -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Nama Lengkap</label>
+                        <input type="text" class="input-field" placeholder="Masukkan nama Anda" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">NRP</label>
+                        <input type="text" class="input-field" placeholder="Masukkan NRP" required>
+                    </div>
+
+                    <hr class="border-gray-100 my-2">
+
+                    <!-- Waktu Peminjaman -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Hari Peminjaman</label>
+                        <input type="date" class="input-field" required>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <div class="w-1/2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jam Mulai</label>
+                            <input type="time" class="input-field" required>
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1.5">Jam Selesai</label>
+                            <input type="time" class="input-field" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5">Lama Meminjam (Hari)</label>
+                        <div class="relative">
+                            <input type="number" min="1" class="input-field" placeholder="Contoh: 3" required>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Hari</span>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-4 pb-2">
+                        <button type="submit" class="w-full bg-gray-900 hover:bg-black text-white font-semibold py-3.5 px-4 rounded-xl shadow-md transition-all active:scale-[0.98]">
+                            Submit Pengajuan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Custom Alert / Toast (Pengganti alert() bawaan) -->
+        <div id="toast-message" class="absolute top-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 transition-all duration-300 transform -translate-y-20 opacity-0 w-11/12 max-w-[400px]">
+            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold">Berhasil!</h4>
+                <p class="text-xs text-gray-300 mt-0.5">Pengajuan peminjaman berhasil disubmit.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnOpen = document.getElementById('btn-open-modal');
+            const btnClose = document.getElementById('btn-close-modal');
+            const overlay = document.getElementById('modal-overlay');
+            const modal = document.getElementById('borrow-modal');
+            const form = document.getElementById('borrow-form');
+            const toast = document.getElementById('toast-message');
+
+            // Fungsi Buka Modal
+            const openModal = () => {
+                overlay.classList.remove('hidden');
+                // Sedikit delay agar transisi opacity terlihat
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                    overlay.classList.add('opacity-100');
+                    modal.classList.remove('bottom-sheet-enter', 'bottom-sheet-exit');
+                    modal.classList.add('bottom-sheet-active');
+                }, 10);
+            };
+
+            // Fungsi Tutup Modal
+            const closeModal = () => {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0');
+                modal.classList.remove('bottom-sheet-active');
+                modal.classList.add('bottom-sheet-exit');
+                
+                // Sembunyikan elemen setelah animasi selesai
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    modal.classList.remove('bottom-sheet-exit');
+                    modal.classList.add('bottom-sheet-enter');
+                }, 300);
+            };
+
+            // Fungsi Tampilkan Toast Alert
+            const showToast = () => {
+                toast.classList.remove('-translate-y-20', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+
+                // Hilangkan otomatis setelah 3.5 detik
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('-translate-y-20', 'opacity-0');
+                }, 3500);
+            };
+
+            // Event Listeners
+            btnOpen.addEventListener('click', openModal);
+            btnClose.addEventListener('click', closeModal);
+            overlay.addEventListener('click', closeModal); // Tutup jika klik diluar area form
+
+            // Handle Submit Form
+            form.addEventListener('submit', (e) => {
+                e.preventDefault(); // Mencegah reload halaman
+                
+                closeModal();
+                
+                // Tunggu sedikit agar animasi modal tertutup selesai sebelum memunculkan toast
+                setTimeout(() => {
+                    showToast();
+                    form.reset(); // Kosongkan kembali form
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
